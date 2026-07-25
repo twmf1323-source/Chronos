@@ -11960,6 +11960,12 @@ window.CHRONOS_CONFIG = {
   function addEvent(x, y, { openEdit = true, image = null } = {}) {
     const scrollX = canvasWrap.scrollLeft;
     const scrollY = canvasWrap.scrollTop;
+    const viewW = canvasWrap.clientWidth || 800;
+    const viewH = canvasWrap.clientHeight || 600;
+    // Place near upper area of the current viewport (not stacked by event count).
+    // Slight jitter avoids perfect overlap when creating several in a row.
+    const defaultX = scrollX + Math.min(200, Math.max(40, viewW * 0.2)) + Math.random() * 80;
+    const defaultY = scrollY + Math.min(140, Math.max(60, viewH * 0.18)) + Math.random() * 40;
 
     const ev = {
       id: uid(),
@@ -11967,8 +11973,8 @@ window.CHRONOS_CONFIG = {
       desc: "",
       color: PALETTE[state.events.length % PALETTE.length],
       image: image,
-      x: x != null ? x : scrollX + 200 + Math.random() * 80,
-      y: y != null ? y : scrollY + 160 + state.events.length * 40,
+      x: x != null ? x : clamp(defaultX, 0, Math.max(0, CANVAS_W - CARD_W)),
+      y: y != null ? y : clamp(defaultY, 0, Math.max(0, CANVAS_H - Math.min(CARD_H_EST, 80))),
       w: CARD_W,
       h: CARD_H_EST,
       timeId: null,
