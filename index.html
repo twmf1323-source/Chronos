@@ -2402,6 +2402,123 @@ body.connect-mode .event-card .port {
   padding-right: 36px;
 }
 
+/*
+ * Custom select for zoom-locked dialogs.
+ * Native <option> menus ignore CSS transform, so they shrink/grow with
+ * browser Ctrl± while the drawer stays locked — replace with this UI.
+ */
+.zoom-select {
+  position: relative;
+  width: 100%;
+}
+
+.zoom-select-native {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.zoom-select-trigger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  line-height: 1.4;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.zoom-select-trigger:disabled,
+.zoom-select-trigger.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.zoom-select-trigger-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 4px;
+}
+
+.zoom-select-trigger[aria-expanded="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.zoom-select-list {
+  z-index: 200;
+  min-width: 120px;
+  max-height: min(320px, 50vh);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+
+.zoom-select-list[hidden] {
+  display: none !important;
+}
+
+.zoom-select-option {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.zoom-select-option:hover,
+.zoom-select-option.is-active {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.zoom-select-option.is-selected {
+  font-weight: 600;
+  color: var(--accent-hover, var(--accent));
+  background: rgba(139, 115, 85, 0.12);
+}
+
+.zoom-select-option.is-selected.is-active,
+.zoom-select-option.is-selected:hover {
+  background: rgba(139, 115, 85, 0.2);
+}
+
+.zoom-select-empty {
+  padding: 12px;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
 .field-hint {
   font-size: 0.75rem;
   color: var(--ink-muted);
@@ -3149,15 +3266,20 @@ body.connect-mode .event-card .port {
 }
 
 /* Relation / link-person modals — full dialog as wide as practical
-   (must beat .modal-card { width: 400px } later in the file) */
+   (must beat .modal-card { width: 400px } later in the file)
+   Viewport limits × --browser-zoom so after chrome-inv-zoom scale they still fit. */
 #relation-modal .modal-card.relation-modal-card,
 #link-person-modal .modal-card.relation-modal-card {
-  width: min(98vw, 1400px);
-  max-width: 98vw;
-  max-height: min(96vh, 980px);
+  width: min(calc(98vw * var(--browser-zoom, 1)), 1400px);
+  max-width: calc(98vw * var(--browser-zoom, 1));
+  max-height: min(calc(96vh * var(--browser-zoom, 1)), 980px);
   overflow-y: auto;
   padding: 32px 40px;
   box-sizing: border-box;
+  /* Same physical size under Ctrl± as edit drawer / time modal */
+  transform: scale(var(--chrome-inv-zoom, 1));
+  transform-origin: center center;
+  animation: modalIn 0.3s var(--ease) forwards;
 }
 
 #relation-modal .relation-modal-card h3,
@@ -3167,8 +3289,8 @@ body.connect-mode .event-card .port {
 
 /* 「加入已有人物」：頭像 100px、挑選區放大 */
 #link-person-modal .modal-card.relation-modal-card {
-  width: min(98vw, 1500px);
-  max-height: min(96vh, 1000px);
+  width: min(calc(98vw * var(--browser-zoom, 1)), 1500px);
+  max-height: min(calc(96vh * var(--browser-zoom, 1)), 1000px);
   padding: 36px 44px 32px;
 }
 
@@ -3193,7 +3315,7 @@ body.connect-mode .event-card .port {
 #link-person-modal .relation-person-picker {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 14px 12px;
-  max-height: min(72vh, 720px);
+  max-height: min(calc(72vh * var(--browser-zoom, 1)), 720px);
   min-height: 320px;
   padding: 18px;
 }
@@ -3271,7 +3393,7 @@ body.connect-mode .event-card .port {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 12px 10px;
-  max-height: min(56vh, 480px);
+  max-height: min(calc(56vh * var(--browser-zoom, 1)), 480px);
   min-height: 200px;
   overflow-y: auto;
   padding: 14px;
@@ -4053,8 +4175,8 @@ button.person-hover-event.is-jumpable:focus-visible {
 
 .crop-modal-card {
   position: relative;
-  width: min(640px, 100%);
-  max-height: min(92vh, 900px);
+  width: min(640px, calc(100% * var(--browser-zoom, 1)));
+  max-height: min(calc(92vh * var(--browser-zoom, 1)), 900px);
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -4063,7 +4185,10 @@ button.person-hover-event.is-jumpable:focus-visible {
   border-radius: 18px;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
-  animation: modalIn 0.3s var(--ease);
+  /* Keep physical size under browser Ctrl± zoom (same as edit drawer) */
+  transform: scale(var(--chrome-inv-zoom, 1));
+  transform-origin: center center;
+  animation: modalIn 0.3s var(--ease) forwards;
 }
 
 .crop-modal-header {
@@ -4326,23 +4451,23 @@ button.person-hover-event.is-jumpable:focus-visible {
 
 .modal-card {
   position: relative;
-  width: min(400px, 100%);
+  width: min(400px, calc(100% * var(--browser-zoom, 1)));
   padding: 28px;
   background: var(--bg-elevated);
   border: 1px solid var(--line);
   border-radius: 18px;
   box-shadow: var(--shadow-lg);
-  animation: modalIn 0.3s var(--ease);
-}
-
-/* Time modal — larger panel + browser zoom lock (same idea as edit drawer) */
-.time-modal-card {
-  width: min(560px, 100%);
-  padding: 36px 40px 32px;
-  /* Override generic modalIn so scale can include chrome-inv-zoom */
-  animation: timeModalIn 0.3s var(--ease) forwards;
+  /* Keep physical size under browser Ctrl± zoom (same as edit drawer) */
   transform: scale(var(--chrome-inv-zoom, 1));
   transform-origin: center center;
+  animation: modalIn 0.3s var(--ease) forwards;
+  box-sizing: border-box;
+}
+
+/* Time modal — larger panel; zoom lock inherited from .modal-card */
+.time-modal-card {
+  width: min(560px, calc(100% * var(--browser-zoom, 1)));
+  padding: 36px 40px 32px;
 }
 
 .time-modal-card h3 {
@@ -4577,6 +4702,24 @@ button.person-hover-event.is-jumpable:focus-visible {
   font-size: 0.95rem;
 }
 
+.time-auto-hint[hidden],
+#time-pos-field[hidden] {
+  display: none;
+}
+
+/* All pop-up edit dialogs: enter animation includes chrome zoom lock scale */
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(calc(0.98 * var(--chrome-inv-zoom, 1)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(var(--chrome-inv-zoom, 1));
+  }
+}
+
+/* Alias kept for any leftover references */
 @keyframes timeModalIn {
   from {
     opacity: 0;
@@ -4586,16 +4729,6 @@ button.person-hover-event.is-jumpable:focus-visible {
     opacity: 1;
     transform: translateY(0) scale(var(--chrome-inv-zoom, 1));
   }
-}
-
-.time-auto-hint[hidden],
-#time-pos-field[hidden] {
-  display: none;
-}
-
-@keyframes modalIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-card h3 {
@@ -5526,6 +5659,8 @@ window.CHRONOS_CONFIG = {
   let browserZoomOsDpr = null;
   let browserZoomRaf = 0;
   let chromeZoomShellsReady = false;
+  /** Custom selects inside zoom-locked dialogs (see ensureZoomSelect) */
+  const zoomSelectMap = new Map();
 
   function snapBrowserZoom(raw) {
     let best = 1;
@@ -5617,6 +5752,10 @@ window.CHRONOS_CONFIG = {
     root.style.setProperty("--browser-zoom", String(browserZoom));
     root.style.setProperty("--chrome-inv-zoom", String(inv));
     root.dataset.browserZoom = String(browserZoom);
+    // Keep open custom select lists aligned after zoom step change
+    zoomSelectMap.forEach((api) => {
+      if (api.isOpen?.()) api.refresh();
+    });
 
     // Transform does not affect layout — shell must reserve scaled height.
     const settings = document.querySelector("#settings-bar");
@@ -5663,7 +5802,7 @@ window.CHRONOS_CONFIG = {
   /** Timeline label font size (px) */
   const RAIL_LABEL_SIZE_DEFAULT = 12.8;
   const RAIL_LABEL_SIZE_MIN = 10;
-  const RAIL_LABEL_SIZE_MAX = 18;
+  const RAIL_LABEL_SIZE_MAX = 36;
   /** @deprecated use cardDefaultW() — kept as runtime mirror of settings */
   let CARD_W = CARD_W_DEFAULT;
   let CARD_H_EST = CARD_H_DEFAULT;
@@ -5733,12 +5872,12 @@ window.CHRONOS_CONFIG = {
   ];
 
   const FONT_PARTS = [
-    { key: "title", label: "標題", sizeMin: 12, sizeMax: 32, sizeDefault: 16.8, weightDefault: "400", fontDefault: "serif" },
-    { key: "desc", label: "敘述", sizeMin: 10, sizeMax: 22, sizeDefault: 12.5, weightDefault: "400", fontDefault: "sans" },
-    { key: "tag", label: "標籤", sizeMin: 9, sizeMax: 16, sizeDefault: 10.4, weightDefault: "600", fontDefault: "sans" },
-    { key: "time", label: "時間徽章", sizeMin: 9, sizeMax: 16, sizeDefault: 10.9, weightDefault: "600", fontDefault: "sans" },
-    { key: "person-name", label: "人物名字", sizeMin: 16, sizeMax: 48, sizeDefault: 33.6, weightDefault: "500", fontDefault: "serif" },
-    { key: "person-desc", label: "人物敘述", sizeMin: 12, sizeMax: 32, sizeDefault: 21.6, weightDefault: "400", fontDefault: "sans" },
+    { key: "title", label: "標題", sizeMin: 12, sizeMax: 72, sizeDefault: 16.8, weightDefault: "400", fontDefault: "serif" },
+    { key: "desc", label: "敘述", sizeMin: 10, sizeMax: 48, sizeDefault: 12.5, weightDefault: "400", fontDefault: "sans" },
+    { key: "tag", label: "標籤", sizeMin: 9, sizeMax: 36, sizeDefault: 10.4, weightDefault: "600", fontDefault: "sans" },
+    { key: "time", label: "時間徽章", sizeMin: 9, sizeMax: 36, sizeDefault: 10.9, weightDefault: "600", fontDefault: "sans" },
+    { key: "person-name", label: "人物名字", sizeMin: 16, sizeMax: 96, sizeDefault: 33.6, weightDefault: "500", fontDefault: "serif" },
+    { key: "person-desc", label: "人物敘述", sizeMin: 12, sizeMax: 72, sizeDefault: 21.6, weightDefault: "400", fontDefault: "sans" },
   ];
 
   const WEIGHT_OPTIONS = [
@@ -12051,6 +12190,254 @@ window.CHRONOS_CONFIG = {
 
   // ── Drawer ──
 
+  /**
+   * Custom select UI for dialogs under chrome zoom-lock.
+   * Native <select> option menus ignore CSS transform, so their text shrinks
+   * with browser Ctrl± while the drawer stays physically constant — this
+   * listbox is portaled + scaled with --chrome-inv-zoom to match.
+   */
+  function getChromeInvZoom() {
+    const raw = getComputedStyle(document.documentElement)
+      .getPropertyValue("--chrome-inv-zoom")
+      .trim();
+    const n = parseFloat(raw);
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  }
+
+  function closeAllZoomSelects(except) {
+    zoomSelectMap.forEach((api, sel) => {
+      if (except && sel === except) return;
+      api.close();
+    });
+  }
+
+  function ensureZoomSelect(select) {
+    if (!select) return null;
+    if (zoomSelectMap.has(select)) return zoomSelectMap.get(select);
+
+    const wrap = document.createElement("div");
+    wrap.className = "zoom-select";
+    select.parentNode.insertBefore(wrap, select);
+    wrap.appendChild(select);
+    select.classList.add("zoom-select-native");
+    select.tabIndex = -1;
+    select.setAttribute("aria-hidden", "true");
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "zoom-select-trigger field-select";
+    btn.setAttribute("aria-haspopup", "listbox");
+    btn.setAttribute("aria-expanded", "false");
+    if (select.id) btn.id = `${select.id}-trigger`;
+    btn.innerHTML = `<span class="zoom-select-trigger-label"></span>`;
+    const labelEl = btn.querySelector(".zoom-select-trigger-label");
+
+    const list = document.createElement("div");
+    list.className = "zoom-select-list";
+    list.setAttribute("role", "listbox");
+    list.hidden = true;
+    if (select.id) list.id = `${select.id}-listbox`;
+    btn.setAttribute("aria-controls", list.id || "");
+
+    wrap.appendChild(btn);
+
+    let open = false;
+    let activeIndex = -1;
+    let onDocPointer = null;
+    let onWinResize = null;
+    let onWinScroll = null;
+
+    function selectedOption() {
+      const opts = Array.from(select.options);
+      return opts.find((o) => o.selected) || opts[0] || null;
+    }
+
+    function syncTrigger() {
+      const opt = selectedOption();
+      labelEl.textContent = opt ? opt.textContent : "—";
+      btn.disabled = !!select.disabled;
+      btn.classList.toggle("is-disabled", !!select.disabled);
+      btn.title = labelEl.textContent;
+    }
+
+    function placeList() {
+      const inv = getChromeInvZoom();
+      const rect = btn.getBoundingClientRect();
+      const layoutW = Math.max(120, rect.width / inv);
+      const visualH = Math.min(320, window.innerHeight * 0.5);
+      const spaceBelow = window.innerHeight - rect.bottom - 12;
+      const openUp = spaceBelow < Math.min(160, visualH) && rect.top > spaceBelow;
+
+      list.style.position = "fixed";
+      list.style.left = `${rect.left}px`;
+      list.style.width = `${layoutW}px`;
+      list.style.maxHeight = `${Math.min(320, (openUp ? rect.top - 12 : spaceBelow) / inv)}px`;
+      list.style.transform = `scale(${inv})`;
+      list.style.transformOrigin = openUp ? "bottom left" : "top left";
+      if (openUp) {
+        list.style.top = "auto";
+        list.style.bottom = `${window.innerHeight - rect.top + 4}px`;
+      } else {
+        list.style.bottom = "auto";
+        list.style.top = `${rect.bottom + 4}px`;
+      }
+      list.style.zIndex = "200";
+    }
+
+    function setActive(i) {
+      const items = list.querySelectorAll(".zoom-select-option");
+      activeIndex = i;
+      items.forEach((el, idx) => {
+        el.classList.toggle("is-active", idx === i);
+        if (idx === i) el.scrollIntoView({ block: "nearest" });
+      });
+    }
+
+    function chooseValue(value) {
+      if (select.disabled) return;
+      const prev = select.value;
+      select.value = value;
+      syncTrigger();
+      close();
+      if (select.value !== prev) {
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+
+    function buildOptions() {
+      list.innerHTML = "";
+      const opts = Array.from(select.options);
+      if (!opts.length) {
+        const empty = document.createElement("div");
+        empty.className = "zoom-select-empty";
+        empty.textContent = "沒有可選項目";
+        list.appendChild(empty);
+        return;
+      }
+      opts.forEach((opt, idx) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "zoom-select-option";
+        item.setAttribute("role", "option");
+        item.dataset.value = opt.value;
+        item.dataset.index = String(idx);
+        item.textContent = opt.textContent;
+        if (opt.selected || opt.value === select.value) {
+          item.classList.add("is-selected");
+          item.setAttribute("aria-selected", "true");
+        } else {
+          item.setAttribute("aria-selected", "false");
+        }
+        if (opt.disabled) {
+          item.disabled = true;
+          item.style.opacity = "0.5";
+        }
+        item.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          chooseValue(opt.value);
+        });
+        item.addEventListener("pointerenter", () => setActive(idx));
+        list.appendChild(item);
+      });
+      const selIdx = opts.findIndex((o) => o.value === select.value);
+      setActive(selIdx >= 0 ? selIdx : 0);
+    }
+
+    function openList() {
+      if (select.disabled || open) return;
+      closeAllZoomSelects(select);
+      open = true;
+      btn.setAttribute("aria-expanded", "true");
+      buildOptions();
+      document.body.appendChild(list);
+      list.hidden = false;
+      placeList();
+
+      onDocPointer = (e) => {
+        if (wrap.contains(e.target) || list.contains(e.target)) return;
+        close();
+      };
+      onWinResize = () => placeList();
+      onWinScroll = () => placeList();
+      document.addEventListener("pointerdown", onDocPointer, true);
+      window.addEventListener("resize", onWinResize);
+      window.addEventListener("scroll", onWinScroll, true);
+    }
+
+    function close() {
+      if (!open) return;
+      open = false;
+      btn.setAttribute("aria-expanded", "false");
+      list.hidden = true;
+      if (list.parentNode) list.parentNode.removeChild(list);
+      if (onDocPointer) {
+        document.removeEventListener("pointerdown", onDocPointer, true);
+        onDocPointer = null;
+      }
+      if (onWinResize) {
+        window.removeEventListener("resize", onWinResize);
+        onWinResize = null;
+      }
+      if (onWinScroll) {
+        window.removeEventListener("scroll", onWinScroll, true);
+        onWinScroll = null;
+      }
+    }
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (open) close();
+      else openList();
+    });
+
+    btn.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (!open) openList();
+        else if (e.key === "ArrowDown") setActive(Math.min(activeIndex + 1, select.options.length - 1));
+      } else if (e.key === "ArrowUp" && open) {
+        e.preventDefault();
+        setActive(Math.max(activeIndex - 1, 0));
+      } else if (e.key === "Escape" && open) {
+        e.preventDefault();
+        close();
+      } else if (e.key === "Enter" && open && activeIndex >= 0) {
+        e.preventDefault();
+        const opt = select.options[activeIndex];
+        if (opt) chooseValue(opt.value);
+      }
+    });
+
+    list.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close();
+        btn.focus();
+      }
+    });
+
+    const api = {
+      refresh() {
+        syncTrigger();
+        if (open) {
+          buildOptions();
+          placeList();
+        }
+      },
+      close,
+      isOpen: () => open,
+    };
+    zoomSelectMap.set(select, api);
+    syncTrigger();
+    return api;
+  }
+
+  function refreshZoomSelect(select) {
+    ensureZoomSelect(select)?.refresh();
+  }
+
   function populateTimeSelect(selectedId) {
     const sel = $("#edit-time");
     const sorted = [...state.times].sort((a, b) => getTimeY(a) - getTimeY(b));
@@ -12062,6 +12449,7 @@ window.CHRONOS_CONFIG = {
       if (t.id === selectedId) opt.selected = true;
       sel.appendChild(opt);
     });
+    refreshZoomSelect(sel);
   }
 
   function setDrawerMode(mode) {
@@ -12214,6 +12602,7 @@ window.CHRONOS_CONFIG = {
       field.hidden = false;
       // Still show for single event so user understands the binding
     }
+    refreshZoomSelect(sel);
   }
 
   /**
@@ -12611,6 +13000,7 @@ window.CHRONOS_CONFIG = {
   }
 
   function closeDrawer() {
+    closeAllZoomSelects();
     if (editingPersonId) {
       applyPersonDrawer();
     } else if (editingEventId) {
@@ -16249,6 +16639,10 @@ window.CHRONOS_CONFIG = {
   // ── Bind UI ──
 
   function bindUI() {
+    // Zoom-locked custom selects (native option menus ignore CSS transform)
+    ensureZoomSelect($("#edit-person-primary-event"));
+    ensureZoomSelect($("#edit-time"));
+
     setupScrollSync();
 
     $("#btn-add-event").addEventListener("click", () => addEvent());
